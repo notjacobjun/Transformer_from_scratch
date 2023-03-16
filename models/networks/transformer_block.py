@@ -4,7 +4,7 @@ from torch import nn
 from models.layers.self_attention import SelfAttention
 
 
-class Transformer(nn.Module):
+class TransformerBlock(nn.Module):
     def __init__(self, embed_size, heads, dropout_prob, forward_expansion=4) -> None:
         super().__init__()
 
@@ -21,15 +21,15 @@ class Transformer(nn.Module):
         self.dropout = nn.Dropout(dropout_prob)
 
     # TODO consider adding the masking capability for increased performance
-    def forward(self, x):
+    def forward(self, X, mask):
         # apply self attention to the input
-        attended = self.attention(x)
+        attended = self.attention(X, mask)
 
         # apply the residual connections and normalization layer
-        normalized_weights = self.dropout(self.norm1(attended + x))
+        normalized_weights = self.dropout(self.norm1(attended + X))
 
         # apply the FFN layer
         fedforward_weights = self.ff(normalized_weights)
 
         # apply the normalization
-        return self.dropout(self.norm2(fedforward_weights + x))
+        return self.dropout(self.norm2(fedforward_weights + X))

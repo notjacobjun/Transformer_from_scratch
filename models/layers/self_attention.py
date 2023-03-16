@@ -4,14 +4,14 @@ from torch import nn
 
 
 class SelfAttention(nn.Module):
-    def __init__(self, embed_size, num_heads=4, mask=False):
+    def __init__(self, embed_size, num_heads=4):
         super.__init__()
 
         # Ensure that k evenly divides the num_heads
         assert embed_size % num_heads == 0
 
         # set the attributes
-        self.k, self.mask, self.num_heads = embed_size, mask, num_heads
+        self.k, self.num_heads = embed_size, num_heads
 
         # parse the input into keys, query, and values
         self.toqueries = nn.Linear(embed_size, embed_size, bias=False)
@@ -21,15 +21,15 @@ class SelfAttention(nn.Module):
         # this layer will be applied after the multi-head attention operation is performed
         self.unifyheads = nn.Linear(embed_size, embed_size)
 
-    def forward(self, x):
+    def forward(self, X, mask):
         # parse the size
-        b, t, k = x.size()
+        b, t, k = X.size()
         h = self.num_heads
 
         # parse the queries, keys, and values from the input x
-        queries = self.toqueries(x)
-        keys = self.tokeys(x)
-        values = self.tovalues(x)
+        queries = self.toqueries(X)
+        keys = self.tokeys(X)
+        values = self.tovalues(X)
 
         # split the keys, queries, adn values into s chunks of matrix operations (this is for efficient multi-head attention)
         s = k // h
@@ -52,9 +52,9 @@ class SelfAttention(nn.Module):
         weights /= (math.sqrt(k))
 
         # optionally we can mask out leftward information flow to preserve auto-regressive property
-        if self.mask:
-            # TODO perform the masking logic here
-            pass
+        if mask is not None:
+            # note that instead of using -infinity we are using some really small value to prevent overflow
+            weights = weights.masked_fill(mask == 0, float("-1e20"))
 
         # perform softmax on weights (rescale weights to sum to 1)
         nn.functional.softmax(weights, dim=2)

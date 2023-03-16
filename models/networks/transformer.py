@@ -5,28 +5,31 @@ from models.layers.self_attention import SelfAttention
 
 
 class Transformer(nn.Module):
-    def __init__(self, k, heads) -> None:
+    def __init__(self, embed_size, heads, dropout_prob, forward_expansion=4) -> None:
         super().__init__()
 
         # setup the network architecture
-        self.attention = SelfAttention(k, heads=heads)
-        self.norm1 = nn.LayerNorm(k)
-        self.norm2 = nn.LayerNorm(k)
+        self.attention = SelfAttention(embed_size, heads=heads)
+        self.norm1 = nn.LayerNorm(embed_size)
+        self.norm2 = nn.LayerNorm(embed_size)
         self.ff = nn.Sequential(
-            nn.Linear(k, 4 * k),
+            nn.Linear(embed_size, forward_expansion * embed_size),
             nn.ReLU(),
-            nn.Linear(4 * k, k)
+            nn.Linear(forward_expansion * embed_size, embed_size)
         )
 
+        self.dropout = nn.Dropout(dropout_prob)
+
+    # TODO consider adding the masking capability for increased performance
     def forward(self, x):
         # apply self attention to the input
         attended = self.attention(x)
 
         # apply the residual connections and normalization layer
-        normalized_weights = self.norm1(attended + x)
+        normalized_weights = self.dropout(self.norm1(attended + x))
 
         # apply the FFN layer
         fedforward_weights = self.ff(normalized_weights)
 
         # apply the normalization
-        return self.norm2(fedforward_weights + x)
+        return self.dropout(self.norm2(fedforward_weights + x))

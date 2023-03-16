@@ -4,22 +4,22 @@ from torch import nn
 
 
 class SelfAttention(nn.Module):
-    def __init__(self, k, num_heads=4, mask=False):
+    def __init__(self, embed_size, num_heads=4, mask=False):
         super.__init__()
 
         # Ensure that k evenly divides the num_heads
-        assert k % num_heads == 0
+        assert embed_size % num_heads == 0
 
         # set the attributes
-        self.k, self.mask, self.num_heads = k, mask, num_heads
+        self.k, self.mask, self.num_heads = embed_size, mask, num_heads
 
         # parse the input into keys, query, and values
-        self.toqueries = nn.Linear(k, k, bias=False)
-        self.tokeys = nn.Linear(k, k, bias=False)
-        self.tovalues = nn.Linear(k, k, bias=False)
+        self.toqueries = nn.Linear(embed_size, embed_size, bias=False)
+        self.tokeys = nn.Linear(embed_size, embed_size, bias=False)
+        self.tovalues = nn.Linear(embed_size, embed_size, bias=False)
 
         # this layer will be applied after the multi-head attention operation is performed
-        self.unifyheads = nn.Linear(k, k)
+        self.unifyheads = nn.Linear(embed_size, embed_size)
 
     def forward(self, x):
         # parse the size

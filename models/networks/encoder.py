@@ -3,7 +3,7 @@ from torch import nn
 from models.embedding.positional_encoding import PositionalEncoding
 
 from models.embedding.token_embedding import TokenEmbedding
-from models.networks.transformer_block import TransformerBlock
+from models.layers.transformer_block import TransformerBlock
 
 
 class Encoder(nn.Module):

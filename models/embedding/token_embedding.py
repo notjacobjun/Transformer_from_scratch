@@ -11,4 +11,5 @@ class TokenEmbedding(nn.Embedding):
         :param vocab_size: size of vocabulary
         :param embed_size: dimensions of model
         """
-        super(TokenEmbedding).__init__(vocab_size, embed_size, padding_idx=1)
+        super(TokenEmbedding, self).__init__(
+            vocab_size, embed_size, padding_idx=1)

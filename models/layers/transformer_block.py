@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 
 from models.layers.self_attention import SelfAttention
@@ -9,7 +8,7 @@ class TransformerBlock(nn.Module):
         super().__init__()
 
         # setup the network architecture
-        self.attention = SelfAttention(embed_size, heads=heads)
+        self.attention = SelfAttention(embed_size, num_heads=heads)
         self.norm1 = nn.LayerNorm(embed_size)
         self.norm2 = nn.LayerNorm(embed_size)
         self.ff = nn.Sequential(
@@ -20,7 +19,7 @@ class TransformerBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout_prob)
 
-    # TODO consider adding the masking capability for increased performance
+    # TODO Add the masking capability for increased performance
     def forward(self, X, mask):
         # apply self attention to the input
         attended = self.attention(X, mask)
